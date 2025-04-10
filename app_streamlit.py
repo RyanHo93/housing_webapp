@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # URL de l'API FastAPI
-api_url = "http://127.0.0.1:8000/predict"
+api_url = "https://housingapp2-h9e3hxbwhzahb5cb.francecentral-01.azurewebsites.net/predict"
 
 # Titre de l'application
 st.title('Prédiction du prix des appartements')
