@@ -32,11 +32,6 @@ jobs:
       - name: Clone API repository
         run: git clone https://x-access-token:${{ secrets.API_REPO_TOKEN }}@github.com/RyanHo93/housing_prediction.git
 
-      - name: Install API test dependencies
-        run: |
-          cd housing_prediction
-          pip install -r requirements.txt
-
       - name: Run API tests
         run: |
           cd housing_prediction
