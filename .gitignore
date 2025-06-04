@@ -1,0 +1,17 @@
+# Ignorer l'environnement virtuel (nom du dossier peut varier)
+venv/
+env/
+.env/
+
+# Ignorer les fichiers CSV (ou autres fichiers volumineux)
+*.csv
+
+# Ignorer les fichiers Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignorer les fichiers Python compilés
+__pycache__/
+*.pyc
+
+# Ignorer le dossier mlruns
+mlruns/
