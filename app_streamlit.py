@@ -1,17 +1,29 @@
 import streamlit as st
 import requests
 import pandas as pd
+from azure.identity import ClientSecretCredential
 from azureml.core import Workspace, Datastore, Dataset
 from azure.storage.blob import BlobClient
 from io import StringIO
 from datetime import datetime
 import os
 
-# === 🔗 Connexion à Azure ML ===
-ws = Workspace.get(
-    name="housing_workspace",
+# === 🔐 Authentification via Service Principal ===
+tenant_id = os.environ.get("AZURE_TENANT_ID")
+client_id = os.environ.get("AZURE_CLIENT_ID")
+client_secret = os.environ.get("AZURE_SP_PASSWORD")
+
+if not all([tenant_id, client_id, client_secret]):
+    raise ValueError("Les variables d'environnement d'authentification ne sont pas définies.")
+
+credential = ClientSecretCredential(tenant_id=tenant_id, client_id=client_id, client_secret=client_secret)
+
+# === Connexion à Azure ML ===
+ws = Workspace(
     subscription_id="c871724e-63cc-4605-a668-5a6a1b5a925b",
-    resource_group="rg_nlp_ara_05"
+    resource_group="rg_nlp_ara_05",
+    workspace_name="housing_workspace",
+    auth=credential
 )
 
 datastore = Datastore.get(ws, "housing_datastore")
@@ -21,7 +33,6 @@ print(f"🔗 Connexion au datastore '{datastore.name}' réussie.")
 api_url = "https://housingapp2-h9e3hxbwhzahb5cb.francecentral-01.azurewebsites.net/predict"
 connection_string = os.environ.get("AZURE_SECRET")
 
-# Optionnel : Vérifie que le secret est bien lu
 if connection_string is None:
     raise ValueError("Le secret AZURE_SECRET n'a pas été trouvé dans les variables d'environnement.")
 
@@ -69,7 +80,7 @@ if st.button('Obtenir la prédiction'):
             prix_pred = prediction['prediction'][0]
             st.write(f"Le prix prédit pour cet appartement est : ${prix_pred:,.2f}")
 
-            # === 🔄 Ajout d'une colonne temporelle ===
+            # === 🔄 Ajout d'une ligne au DataFrame ===
             nouvelle_ligne = {
                 "longitude": longitude,
                 "latitude": latitude,
@@ -79,14 +90,12 @@ if st.button('Obtenir la prédiction'):
             }
             data_inference = pd.concat([data_inference, pd.DataFrame([nouvelle_ligne])], ignore_index=True)
 
-            # Convertir en CSV en mémoire
+            # Upload vers Azure Blob Storage
             csv_buffer = StringIO()
-            data_inference.to_csv(csv_buffer, index=False, )
+            data_inference.to_csv(csv_buffer, index=False)
             csv_buffer.seek(0)
 
-            # Upload vers Azure Blob Storage (écrase le fichier existant)
             blob_client.upload_blob(csv_buffer.getvalue(), overwrite=True)
-
             st.success("✅ Données d'inférence mises à jour sur Azure Blob Storage.")
         else:
             st.error(f"Erreur de prédiction, code : {response.status_code}.")
