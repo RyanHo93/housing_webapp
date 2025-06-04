@@ -68,7 +68,10 @@ jobs:
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
+        env:
+          AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
         with:
           app-name: 'streamlithousingapp'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF56ECFF53ED420CB545A5FE505D2601 }}
+
