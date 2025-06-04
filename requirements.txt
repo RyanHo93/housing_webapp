@@ -13,4 +13,4 @@ requests==2.32.3
 azureml_core==1.60.0
 azureml-dataprep==5.3.3
 azure-storage-blob==12.25.1
-azure-identity==1.15.0
+azure-identity>=1.16.0,<1.18.0
