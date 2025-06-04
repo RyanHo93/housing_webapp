@@ -71,6 +71,7 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           client-secret: ${{ secrets.AZURE_SP_PASSWORD }}
+          subscription-id: c871724e-63cc-4605-a668-5a6a1b5a925b  # Ajoute la subscription ici!
   
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -79,7 +80,3 @@ jobs:
           app-name: 'streamlithousingapp'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF56ECFF53ED420CB545A5FE505D2601 }}
-
-
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SP_PASSWORD: ${{ secrets.AZURE_SP_PASSWORD }}
