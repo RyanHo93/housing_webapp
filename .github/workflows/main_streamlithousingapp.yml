@@ -49,36 +49,37 @@ jobs:
             release.zip
             !venv/
 
-deploy:
-  runs-on: ubuntu-latest
-  needs: build
-  environment:
-    name: 'Production'
-    url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+  
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+  
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-secret: ${{ secrets.AZURE_SP_PASSWORD }}
+  
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
+        with:
+          app-name: 'streamlithousingapp'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF56ECFF53ED420CB545A5FE505D2601 }}
 
-  steps:
-    - name: Download artifact from build job
-      uses: actions/download-artifact@v4
-      with:
-        name: python-app
-
-    - name: Unzip artifact for deployment
-      run: unzip release.zip
-
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        client-secret: ${{ secrets.AZURE_SP_PASSWORD }}
-
-    - name: 'Deploy to Azure Web App'
-      uses: azure/webapps-deploy@v3
-      id: deploy-to-webapp
-      with:
-        app-name: 'streamlithousingapp'
-        slot-name: 'Production'
-        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF56ECFF53ED420CB545A5FE505D2601 }}
 
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_SP_PASSWORD: ${{ secrets.AZURE_SP_PASSWORD }}
