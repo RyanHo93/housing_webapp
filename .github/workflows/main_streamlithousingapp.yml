@@ -10,25 +10,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read # This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python version
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Create and start virtual environment
+      - name: Install dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
-      
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+          pip install -r requirements.txt
 
-      # === Étapes pour tester l'API depuis un autre repo ===
+      # === Test de l'API externe ===
       - name: Clone API repository
         run: git clone https://x-access-token:${{ secrets.API_REPO_TOKEN }}@github.com/RyanHo93/housing_prediction.git
 
@@ -36,18 +34,17 @@ jobs:
         run: |
           cd housing_prediction
           pytest .
-      # =====================================================
+      # =================================
 
-      - name: Zip artifact for deployment
-        run: zip -r release.zip ./*
+      - name: Zip app for deployment
+        run: |
+          zip -r release.zip . -x "venv/*"
 
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -57,25 +54,13 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      - name: Unzip artifact for deployment
+      - name: Unzip artifact
         run: unzip release.zip
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Set environment variables in Azure Web App
-        run: |
-          az webapp config appsettings set \
-            --name streamlithousingapp \
-            --resource-group rg_nlp_ara_05 \
-            --settings DB_HOST=${{ secrets.DB_HOST }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_NAME=${{ secrets.DB_NAME }} DB_PORT=${{ secrets.DB_PORT }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
