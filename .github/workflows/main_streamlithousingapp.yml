@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App - streamlithousingapp
+Build and deploy Python app to Azure Web App - streamlithousingapp
 
 on:
   push:
@@ -10,23 +10,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read # This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python version
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Create and start virtual environment
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-      # === Test de l'API externe ===
+      # === Étapes pour tester l'API depuis un autre repo ===
       - name: Clone API repository
         run: git clone https://x-access-token:${{ secrets.API_REPO_TOKEN }}@github.com/RyanHo93/housing_prediction.git
 
@@ -34,17 +36,18 @@ jobs:
         run: |
           cd housing_prediction
           pytest .
-      # =================================
+      # =====================================================
 
-      - name: Zip app for deployment
-        run: |
-          zip -r release.zip . -x "venv/*"
+      - name: Zip artifact for deployment
+        run: zip -r release.zip ./*
 
-      - name: Upload artifact
+      - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: release.zip
+          path: |
+            release.zip
+            !venv/
 
   deploy:
     runs-on: ubuntu-latest
@@ -54,12 +57,12 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      - name: Unzip artifact
+      - name: Unzip artifact for deployment
         run: unzip release.zip
 
       - name: Deploy to Azure Web App
