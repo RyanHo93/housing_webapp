@@ -14,4 +14,5 @@ azureml_core==1.60.0
 azureml-dataprep==5.3.3
 azure-storage-blob==12.25.1
 azure-identity>=1.16.0,<1.18.0
-pymysql== 1.1.1
+pymysql==1.1.1
+evidently==0.7.5
