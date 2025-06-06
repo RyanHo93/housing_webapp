@@ -82,7 +82,7 @@ jobs:
         run: |
           source venv/bin/activate
           cd housing_webapp
-          python evidently_drift_check.py
+          python datadrift.py
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
