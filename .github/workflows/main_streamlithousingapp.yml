@@ -78,6 +78,7 @@ jobs:
       - name: Run Evidently data drift check
         run: |
           source venv/bin/activate
+          cd housing_webapp
           python evidently_drift_check.py
 
       - name: Deploy to Azure Web App
