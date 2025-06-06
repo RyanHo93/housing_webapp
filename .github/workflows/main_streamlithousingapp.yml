@@ -64,6 +64,22 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create and activate virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Run Evidently data drift check
+        run: |
+          source venv/bin/activate
+          python evidently_drift_check.py
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
