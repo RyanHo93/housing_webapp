@@ -75,6 +75,11 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
+      - name: Run unit tests on Streamlit app
+        run: |
+          source venv/bin/activate
+          pytest test_streamlit_app.py
+
       - name: Run Evidently data drift check
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -95,4 +100,5 @@ jobs:
           app-name: 'streamlithousingapp'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF56ECFF53ED420CB545A5FE505D2601 }}
+
 
